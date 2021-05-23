@@ -16,6 +16,8 @@ INFO = """
 moooood is an EEG-based emotion tracker used for virtual avatars.
 To set up your avatar, provide us with the keyboard shortcuts you use 
 to activate emotions in your avatar and start tracking.
+To provide a shortcut: 1) select a field, 2) Press enter, 
+3) Press the desired shortcut, 4) Press escape.
 """
 
 class NoBullShitText(nps.Pager):
@@ -47,19 +49,19 @@ class Menu(nps.NPSApp):
         but_emo_shortcut_neutral = F.add(nps.ButtonPress, name='Enter your shortcut here', when_pressed_function= lambda: self.emo_short(but_emo_shortcut_neutral, "neutral"))
 
         F.add(nps.FixedText, value='Add a keyboard shortcut for the happy expression:', editable=False)
-        but_emo_shortcut_happy = F.add(nps.ButtonPress, name='Enter your shortcut here', when_pressed_function= lambda: self.emo_short(but_emo_shortcut_happy, "happy"))
+        but_emo_shortcut_happy = F.add(nps.ButtonPress, name='Enter your shortcut here', when_pressed_function= lambda: self.emo_short(but_emo_shortcut_happy, "happiness"))
 
-        F.add(nps.FixedText, value='Add a keyboard shortcut for the angry expression:', editable=False)
-        but_emo_shortcut_sad = F.add(nps.ButtonPress, name='Enter your shortcut here', when_pressed_function= lambda: self.emo_short(but_emo_shortcut_sad, "angry"))
+        F.add(nps.FixedText, value='Add a keyboard shortcut for the sad expression:', editable=False)
+        but_emo_shortcut_sad = F.add(nps.ButtonPress, name='Enter your shortcut here', when_pressed_function= lambda: self.emo_short(but_emo_shortcut_sad, "sadness"))
         
         F.edit()
 
 
     def emo_short(self, button: nps.ButtonPress, emo: str):
-        shortcut = kb.record() # Deleting escape
-        if shortcut and shortcut[-1].name == 'esc':
+        shortcut = kb.record()
+        if shortcut and shortcut[-1].name == 'esc': # Deleting escapes
             shortcut.pop()
-        if shortcut and shortcut[0].name == 'enter':
+        if shortcut and shortcut[0].name == 'enter': # Deleting enters
             shortcut.pop(0)
         if len(shortcut)>0:
             button.name = get_text_shortcut(shortcut)
@@ -73,15 +75,14 @@ class Menu(nps.NPSApp):
             return None
             
         kb.play(self.EMO_SHORTCUTS['neutral'])
-        sleep(0.2)
+        sleep(0.4)
         kb.play(val)
         notification.notify(title= "New emotion",
                             message= f"Your emotion was changed to {emo}",
-                            timeout= 5)
+                            timeout= 1)
         kb.start_recording()
         sleep(10)
         found = kb.stop_recording()
-        print(found)
         for name, e in self.EMO_SHORTCUTS.items():
             if sublist(found, e):
                 if name == emo:
@@ -99,11 +100,3 @@ def sublist(lst1, lst2):
    ls1 = [element for element in lst1 if element in lst2]
    ls2 = [element for element in lst2 if element in lst1]
    return ls1 == ls2 and len(ls1)>=len(ls2) and len(ls2)>0
-
-
-if __name__ == "__main__":
-    App = Menu()
-    App.run()
-    sleep(3)
-    for i in ('happy', 'angry'):
-        print(App.gen_emotion(i))
